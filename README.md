@@ -65,7 +65,7 @@ snapshot -i
 | Tabs | `tab list\|new\|select\|close\|show` |
 | Wait | `wait <ms>`, `wait --text`, `wait --gone`, `wait --url`, `wait <target>` |
 
-Targets are refs from a snapshot (`e12`, or `f1e3` in an iframe), locators (`getByRole('button', { name: 'Go' })`, `getByLabel`, `getByText`, `getByPlaceholder`, `getByTestId`, `.first()`, `.nth(i)`, `.filter({ hasText })`, `frameLocator('#f').getByText('…')`) or CSS. They reach into shadow roots, closed ones too, and cross-origin iframes. `help <command>` prints the details.
+Targets are refs from a snapshot (`e12`, or `f1e3` in an iframe), locators (`getByRole('button', { name: 'Go' })`, `getByLabel`, `getByText`, `getByPlaceholder`, `getByTestId`, `.first()`, `.nth(i)`, `.filter({ hasText })`, `frameLocator('#f').getByText('…')`) or CSS. They reach into shadow roots, closed ones too, and cross-origin iframes. `fill` and `upload` are the exception: they look only in the page itself unless the target is a ref or goes through `frameLocator`, so a password meant for the page can't land in an ad's or a widget's iframe. `help <command>` prints the details.
 
 ## What Firefox does differently
 
@@ -80,7 +80,7 @@ Firefox's extension API has no way to send real input, attach a debugger or answ
 | **Dialogs** | `alert`, `confirm` and `prompt` are answered instantly: set the answer with `dialog accept` *before* the step that opens one. Otherwise `confirm` and `prompt` are dismissed, and the step says so | A page can't be left waiting on a dialog |
 | **Popups** | A link or `window.open` from an agent's click opens as a new tab, past the popup blocker | The page gets no `window` object, so login flows that talk to their popup through `window.opener` don't work |
 | **Background tabs** | Agents work in the background, where Firefox slows timers to about 1 s and stops animation frames | A page that seems stuck may need `tab show`, which takes your focus |
-| **`eval` under a strict CSP** | Runs in the extension's isolated world, and says so | It sees the DOM; the page's own variables are under `window.wrappedJSObject` |
+| **`eval` under a strict CSP** | Runs in the extension's isolated world, and says so | It sees the DOM; the page's own variables are under `window.wrappedJSObject`. Its `fetch` can read other sites with your cookies, which the page's can't ([Security](#security)) |
 | **File pickers** | Files are set directly on the input, and pickers a click opens are intercepted | |
 | **Accessibility tree** | Computed from the DOM, as extensions can't read Firefox's own | Close to the real one, but names ignore CSS `content` |
 
@@ -94,11 +94,17 @@ The extension uses Manifest V2 on purpose: only a persistent background page kee
 
 This gives AI apps the use of your signed-in browser, so it's worth knowing what stands in the way:
 
-- **You approve each server**, by matching a code. The extension then checks a signature on every connection, so a program that takes over the port gets nothing.
+- **You approve each server**, by matching a code. The extension then checks a signature on every connection, so a program that takes over the port can't drive your browser.
 - **The extension enforces the rules**, whatever the server asks: no browser pages, extension pages, local files or Mozilla's add-on and account sites, and nothing while you've pressed **Stop**. Private windows are only reachable if you turn on *Run in Private Windows* for the extension.
 - **Web pages can't reach the daemon.** It only listens on `127.0.0.1`, checks `Host` against DNS rebinding, takes only `moz-extension://` origins on the extension's socket, and requires a token for everything else.
 - **Your other tabs are left alone** unless an agent selects one. Nothing is injected and no requests are watched until a tab is claimed. Tabs in use are in a tab group named after the AI app.
-- **Passwords and credentials are kept out of transcripts**: password fields are masked in snapshots, typed text isn't echoed, and `Cookie`, `Set-Cookie`, `Authorization` and CSRF headers are hidden. `get value` and `eval` can still read what a page can.
+- **Passwords and credentials are kept out of transcripts where their names give them away**: password fields are masked in snapshots, typed text isn't echoed, and request details hide headers, URL parameters, form fields and JSON keys named like credentials (cookies, tokens, keys, passwords, sessions). A credential under some other name, or in a response body, still shows. `get value` and `eval` can still read what a page can.
+
+**What it doesn't protect against yet:**
+
+- **Files on your computer.** `upload` sends the page any file you can read, and `screenshot --path` writes wherever it's told, replacing what's there. An agent talked into it by a page could use either, so check the paths in those steps before you approve them.
+- **`eval` in the isolated world.** Under a strict CSP, `eval` runs with the extension's reach: its `fetch` and `XMLHttpRequest` can read other sites with your cookies. A page can make that happen without a CSP, and in the page's own world it can replace `eval`, see the agent's code and forge the answer.
+- **Other accounts on the same computer.** Every account can reach `127.0.0.1`. Another account's program can pose as the extension to the daemon, seeing what agents type and feeding them made-up pages, or take the daemon's port before it starts and pose as the daemon to AI apps, getting its token and reading and writing your files through them. Use it on a computer you don't share.
 
 **The risk that remains is prompt injection.** Pages are untrusted, and a malicious one can try to talk the AI into misusing your logged-in sessions. The server tells agents not to follow instructions from pages, but that isn't a guarantee. Watch what agents do on sites that matter, and press **Stop** if something looks wrong.
 

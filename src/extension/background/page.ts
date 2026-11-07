@@ -27,6 +27,12 @@ const MIN_MESSAGE_TIMEOUT_MS = 8000;
 const KEYBOARD_OPS = new Set(["type", "press"]);
 /** Operations that move the keyboard's focus to their target's frame */
 const FOCUS_OPS = new Set(["click", "fill"]);
+/**
+ * Operations that hand the page what the agent gives them. Unless a ref or `frameLocator` points into an iframe, they stay
+ * in the page itself: searching every frame lets an ad's or a widget's iframe take a password while the page's own field
+ * is still loading
+ */
+const PAGE_ONLY_OPS = new Set(["fill", "upload"]);
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -109,8 +115,8 @@ function splitAtFrames(calls: LocatorCall[]): LocatorCall[][] {
 
 type Placed = { frames: number[]; wire: Target & { doc?: string } } | { error: string } | null;
 
-/** Where to run a target: a ref's frame, a locator's iframe, or every frame, the main one first */
-async function place(state: TabState, target: Target): Promise<Placed> {
+/** Where to run a target: a ref's frame, a locator's iframe, or every frame, the main one first (or only it) */
+async function place(state: TabState, target: Target, everyFrame = true): Promise<Placed> {
   if (target.kind === "ref") {
     const match = REF.exec(target.ref);
     const alias = match?.[1] ?? "";
@@ -144,13 +150,19 @@ async function place(state: TabState, target: Target): Promise<Placed> {
       };
     }
   }
+  if (!everyFrame) return { frames: [0], wire: target };
   const frames = (await browser.webNavigation.getAllFrames({ tabId: state.tabId })) ?? [];
   const ids = frames.map((frame) => frame.frameId).sort((a, b) => a - b);
   return { frames: ids.length ? ids : [0], wire: target };
 }
 
-function nothingMatches(target: Target) {
-  return `Nothing matches ${target.source}. Run \`find "<text>"\` or \`snapshot -i\` to see what's on the page`;
+function nothingMatches(target: Target, op: string) {
+  const text = `Nothing matches ${target.source}. Run \`find "<text>"\` or \`snapshot -i\` to see what's on the page`;
+  if (!PAGE_ONLY_OPS.has(op) || target.kind === "ref") return text;
+  if (target.kind === "locator" && target.calls.some((call) => call.method === "frameLocator" || call.method === "contentFrame")) {
+    return text;
+  }
+  return `${text}. ${op} looks only in the page itself, not in its iframes: for a field in an iframe, use its ref from \`snapshot -i\` or \`frameLocator('<iframe>')\``;
 }
 
 /** Runs an operation on its target, polling until it can happen or time runs out */
@@ -167,7 +179,7 @@ async function runOp(
   for (;;) {
     try {
       const placed = target
-        ? await place(state, target)
+        ? await place(state, target, !PAGE_ONLY_OPS.has(op))
         : { frames: [KEYBOARD_OPS.has(op) ? state.focusFrame : 0], wire: undefined };
       if (placed && "error" in placed) throw new Error(placed.error);
       if (placed) {
@@ -202,7 +214,7 @@ async function runOp(
     }
     if (Date.now() >= deadline) {
       if (lastRetry) throw new Error(lastRetry);
-      if (target) throw new Error(nothingMatches(target));
+      if (target) throw new Error(nothingMatches(target, op));
       throw lastTransient instanceof Error ? lastTransient : new Error("The page didn't answer in time");
     }
     await sleep(100);

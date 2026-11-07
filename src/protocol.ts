@@ -18,7 +18,8 @@
  * The order is what makes six digits enough: the daemon commits before it sees the extension's nonce, and the
  * extension sends its nonce before the daemon reveals, so a program in the middle can't steer the two codes together.
  *
- * The extension enforces every rule about tabs itself, so a program that takes over the port still gets nothing.
+ * The extension enforces every rule about tabs itself, so a program that takes over the port can't drive the browser.
+ * It can still pose as the daemon to AI apps, or as the extension to the daemon: the README's Security section says so.
  */
 
 export const PRODUCT = "firefox-mcp";

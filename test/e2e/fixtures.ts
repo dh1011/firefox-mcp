@@ -91,6 +91,9 @@ tracked.addEventListener('input', () => { if (tracked.value !== last) { last = t
 
 const FRAME = (label: string) => `<!doctype html><title>${label}</title><p>Frame says ${label}</p><button onclick="this.textContent = 'Clicked in ${label}'">Frame button ${label}</button><input aria-label="Frame field ${label}"><div style="width:40px;height:20px;background:#c33"></div>`;
 
+/** A third-party iframe has a field labelled like the page's own, which arrives a moment later, as in a single-page app */
+const LATE_FIELD = `<!doctype html><title>Late field</title><iframe id="cross" src="__OTHER__/frame"></iframe><div id="app"></div><script>setTimeout(() => { document.getElementById('app').innerHTML = '<input id="own" aria-label="Frame field other">'; }, 1500);</script>`;
+
 const SECOND = `<!doctype html><title>Second</title><h1>Second page</h1><p id="query"></p><script>document.getElementById('query').textContent = location.search; console.log('second page loaded');</script><a href="/">Back home</a>`;
 
 const CSP = `<!doctype html><title>Strict</title><h1>Strict page</h1><script src="/csp.js"></script>`;
@@ -129,6 +132,8 @@ export async function startFixtures(): Promise<Fixtures> {
         return html(KITCHEN_SINK.replaceAll("__OTHER__", other.url));
       case "/second":
         return html(SECOND);
+      case "/late-field":
+        return html(LATE_FIELD.replaceAll("__OTHER__", other.url));
       case "/frame":
         return html(FRAME("same"));
       case "/csp":

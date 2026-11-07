@@ -152,7 +152,7 @@ describe("tabs", () => {
   });
 
   it("won't go to browser pages, extension pages or local files", async () => {
-    for (const url of ["about:config", "about:debugging", "file:///C:/Windows/win.ini", "moz-extension://abc/popup.html", "javascript:alert(1)", "https://addons.mozilla.org/"]) {
+    for (const url of ["about:config", "about:debugging", "file:///C:/Windows/win.ini", "moz-extension://abc/popup.html", "javascript:alert(1)", "https://addons.mozilla.org/", "https://addons.mozilla.org./", "https://accounts.firefox.com./"]) {
       assert.match(await app.fails(`goto ${url}`), /Agents can't use/, url);
     }
   });
@@ -326,10 +326,30 @@ describe("clicking", () => {
     assert.match(await app.ok("snapshot --max all"), /button "Clicked in same"/);
   });
 
-  it("finds a locator in an iframe without being told", async () => {
+  it("finds a locator in an iframe without being told, except to fill it", async () => {
     await open();
-    await app.ok("fill getByLabel('Frame field other') \"typed in a frame\"");
+    await app.ok("click getByRole('button', { name: 'Frame button other' })");
+    assert.match(await app.ok("snapshot --max all"), /button "Clicked in other"/);
+    const refused = await app.fails("fill getByLabel('Frame field other') \"meant for the page\"");
+    assert.match(refused, /looks only in the page itself.*frameLocator/s);
+    assert.doesNotMatch(refused, /meant for the page/);
+    assert.doesNotMatch(await app.ok("get value getByLabel('Frame field other')"), /meant for the page/);
+  });
+
+  it("fills in an iframe through frameLocator or a ref", async () => {
+    await open();
+    await app.ok("fill frameLocator('#cross').getByLabel('Frame field other') \"typed in a frame\"");
     assert.equal(await app.ok("get value getByLabel('Frame field other')").then((t) => t.split("\n").at(-1)), "typed in a frame");
+    const ref = refOf(await app.ok("snapshot -i"), /textbox "Frame field same"/);
+    await app.ok(`fill ${ref} "by ref"`);
+    assert.equal(await app.ok("get value frameLocator('#same').getByLabel('Frame field same')").then((t) => t.split("\n").at(-1)), "by ref");
+  });
+
+  it("waits for the page's own field rather than fill a third-party iframe's", async () => {
+    await open("/late-field");
+    await app.ok("fill getByLabel('Frame field other') \"hunter2\"");
+    assert.equal((await app.ok("get value #own")).split("\n").at(-1), "hunter2");
+    assert.doesNotMatch(await app.ok("get value frameLocator('#cross').getByLabel('Frame field other')"), /hunter2/);
   });
 });
 
@@ -719,6 +739,23 @@ describe("console and requests", () => {
 
   it("doesn't break the page while reading responses", async () => {
     assert.equal(await status(), "fetched 42");
+  });
+
+  it("hides the credentials sites name themselves, in headers, URLs and post data", async () => {
+    await open();
+    await app.ok(
+      `eval "async () => { await fetch('/api/data?access_token=URLTOK&page=2', { method: 'POST', headers: { 'x-api-key': 'KEY123', 'x-auth-token': 'TOK123', 'content-type': 'application/json' }, body: JSON.stringify({ user: 'ada', password: 'hunter2' }) }); return 1; }"`,
+    );
+    const list = await app.ok('requests --filter "/api/data?"');
+    assert.match(list, /access_token=\(hidden\)&page=2/);
+    const id = /#(\d+) POST 200 .*access_token/.exec(list)?.[1];
+    assert.ok(id, list);
+    const detail = await app.ok(`request ${id}`);
+    assert.match(detail, /x-api-key: \(hidden\)/i);
+    assert.match(detail, /x-auth-token: \(hidden\)/i);
+    assert.match(detail, /"user":"ada"/);
+    assert.match(detail, /"password":"\(hidden\)"/);
+    assert.doesNotMatch(`${list}\n${detail}`, /URLTOK|KEY123|TOK123|hunter2/);
   });
 });
 

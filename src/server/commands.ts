@@ -249,7 +249,7 @@ export const COMMANDS: CommandDef[] = [
   {
     name: "fill",
     usage: 'fill <target> "<text>" [--submit]',
-    help: "Replaces the field's value (input, textarea, contenteditable). --submit presses Enter after. The text isn't echoed back.",
+    help: "Replaces the field's value (input, textarea, contenteditable). --submit presses Enter after. The text isn't echoed back. It looks only in the page itself, not in its iframes, unless the target is a ref from snapshot or goes through frameLocator, so text meant for the page can't land in an ad's or a widget's iframe.",
     flags: { submit: false },
     maxArgs: 2,
     echo: (args) => `fill${args.positional.length >= 2 ? ` ${args.positional[0]!.text}` : ""}${args.flags.submit ? " --submit" : ""}`,
@@ -312,7 +312,7 @@ export const COMMANDS: CommandDef[] = [
   {
     name: "upload",
     usage: "upload <target> <path>...   # local files",
-    help: "Sets files on a file input, the input the target holds or labels, or the picker that clicking the target opens. Paths are on your machine: absolute, under ~, or relative to your MCP root (or working directory).",
+    help: "Sets files on a file input, the input the target holds or labels, or the picker that clicking the target opens. Paths are on your machine: absolute, under ~, or relative to your MCP root (or working directory). The page gets the files' contents, so only upload what the user asked for. Like fill, it looks only in the page itself unless the target is a ref or goes through frameLocator.",
     maxArgs: Infinity,
     echo: (args) => `upload ${args.positional.map((token) => token.text).join(" ")}`,
     timeoutMs: () => 60_000,
@@ -624,7 +624,7 @@ export const COMMANDS: CommandDef[] = [
   {
     name: "request",
     usage: "request <id> [--body]",
-    help: "Shows a request's headers, its post data, and the response's headers; --body adds the response body (capped). Bodies are kept for text responses of fetches and documents. Cookies and credentials in headers are hidden.",
+    help: "Shows a request's headers, its post data, and the response's headers; --body adds the response body (capped). Bodies are kept for text responses of fetches and documents. Headers, URL parameters, form fields and JSON keys named like credentials (cookies, tokens, keys, passwords, sessions) are hidden; response bodies are shown as they are.",
     flags: { body: false, max: true },
     maxArgs: 1,
     async run(ctx) {

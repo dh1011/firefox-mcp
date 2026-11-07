@@ -9,7 +9,7 @@ import type {
   RequestEntry,
   TabInfo,
 } from "../../protocol";
-import { isExposedUrl, refusedUrlMessage, safeHeaders } from "./rules";
+import { isExposedUrl, refusedUrlMessage, safeHeaders, safePostData, safeUrl } from "./rules";
 
 const MAX_LOG = 500;
 const BODY_LIMIT = 1_000_000;
@@ -229,13 +229,14 @@ function trackRequests(state: TabState): () => void {
   const { tabId } = state;
   const filter: browser.webRequest.RequestFilter = { urls: ["<all_urls>"], tabId };
   const onBefore = (details: { requestId: string; method: string; url: string; type: string; requestBody?: unknown }) => {
+    const postData = safePostData(details.requestBody, BODY_LIMIT);
     const entry: RequestEntry = {
       id: ++state.requestSeq,
       method: details.method,
-      url: details.url,
+      url: safeUrl(details.url),
       type: details.type,
       status: null,
-      ...(postDataOf(details.requestBody) ? { postData: postDataOf(details.requestBody) } : {}),
+      ...(postData ? { postData } : {}),
     };
     state.requests.push(entry);
     state.requestsById.set(details.requestId, entry);
@@ -291,21 +292,6 @@ function trackRequests(state: TabState): () => void {
     webRequest.onCompleted.removeListener(onDone as never);
     webRequest.onErrorOccurred.removeListener(onError as never);
   };
-}
-
-function postDataOf(body: unknown): string | undefined {
-  const request = body as
-    | { formData?: Record<string, string[]>; raw?: { bytes?: ArrayBuffer }[] }
-    | undefined;
-  if (!request) return undefined;
-  if (request.formData) {
-    return Object.entries(request.formData)
-      .map(([key, values]) => `${key}=${values.join(",")}`)
-      .join("&");
-  }
-  const bytes = request.raw?.[0]?.bytes;
-  if (!bytes) return undefined;
-  return new TextDecoder().decode(bytes.slice(0, BODY_LIMIT));
 }
 
 /**
