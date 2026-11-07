@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MCP for Firefox</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <img src="icon.svg" alt="" width="20" height="20" />
+      <h1>MCP for Firefox</h1>
+      <span id="dot" class="dot" aria-hidden="true"></span>
+    </header>
+
+    <p id="status" role="status"></p>
+
+    <section id="pairing" hidden>
+      <p>An AI app on this computer wants to use this browser. Check that this code matches the one it shows.</p>
+      <p id="code" class="code"></p>
+      <button id="allow" class="primary">Allow</button>
+    </section>
+
+    <section id="control" hidden>
+      <button id="stop">Stop</button>
+      <button id="resume" class="primary" hidden>Resume</button>
+    </section>
+
+    <section id="tabs-section" hidden>
+      <h2>In use by agents</h2>
+      <ul id="tabs"></ul>
+    </section>
+
+    <details>
+      <summary>Settings</summary>
+      <label for="port">Port</label>
+      <div class="row">
+        <input id="port" type="number" min="1024" max="65535" placeholder="Automatic" />
+        <button id="save-port">Save</button>
+      </div>
+      <p class="hint">Only if you start the server with <code>--port</code>.</p>
+      <button id="forget">Forget approved servers</button>
+      <p id="version" class="hint"></p>
+    </details>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

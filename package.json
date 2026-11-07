@@ -1,0 +1,35 @@
+{
+  "name": "firefox-mcp",
+  "version": "0.1.0",
+  "description": "MCP server and Firefox extension that let AI apps use your own Firefox: your signed-in sites, in tabs of their own.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "firefox-mcp": "dist/server/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"test/unit/*.test.ts\"",
+    "test:e2e": "npm run build && node --import tsx --test --test-concurrency=1 \"test/e2e/*.test.ts\"",
+    "lint:extension": "web-ext lint --source-dir dist/extension",
+    "package:extension": "npm run build && web-ext build --source-dir dist/extension --artifacts-dir dist/artifacts --filename mcp-for-firefox-{version}.xpi --overwrite-dest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "ws": "^8.22.1"
+  },
+  "devDependencies": {
+    "@types/firefox-webext-browser": "^143.0.1",
+    "@types/node": "^22.20.5",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "web-ext": "^10.8.0"
+  }
+}

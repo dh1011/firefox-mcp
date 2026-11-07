@@ -1,0 +1,39 @@
+{
+  "manifest_version": 2,
+  "name": "MCP for Firefox",
+  "version": "0.1.0",
+  "description": "Lets AI apps use your own Firefox through a local MCP server, in tabs of their own, after you approve them.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "mcp-for-firefox@firefox-mcp.local",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": { "required": ["none"] }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  },
+  "permissions": [
+    "<all_urls>",
+    "storage",
+    "tabGroups",
+    "tabs",
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_title": "MCP for Firefox",
+    "default_popup": "popup.html",
+    "default_icon": "icon.svg",
+    "default_area": "navbar"
+  },
+  "icons": {
+    "48": "icon.svg",
+    "96": "icon.svg"
+  }
+}

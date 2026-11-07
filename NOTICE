@@ -1,0 +1,14 @@
+MCP for Firefox
+
+This project adapts the following from Browser MCP (https://github.com/browsermcp/mcp),
+Copyright Browser MCP contributors, licensed under the Apache License, Version 2.0:
+
+- The `browser` tool's command language: its commands, syntax, and much of their help text and error messages
+- The command-line parser, the locator parser, and the snapshot's text format and filtering
+- The design of the pairing protocol (a signed challenge, and a short authentication string built with a commitment)
+- The design of one daemon per user, shared by a thin stdio process in each AI app
+- The output limits
+
+What changed: Browser MCP drives Chromium with Playwright over chrome.debugger, which Firefox doesn't have. This project
+replaces that entirely with a Firefox WebExtension: content scripts for the accessibility snapshot, locators and input,
+and Firefox's own APIs for screenshots, request tracking and page hooks. Its names and icon are its own.
