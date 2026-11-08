@@ -1,6 +1,6 @@
 /**
- * The `browser` tool's commands. The syntax follows Browser MCP's, so agents and prompts written for it carry over;
- * where Firefox forces a difference (`dialog`, `tab show`) the help says so.
+ * The `browser` tool's commands (see NOTICE). Where Firefox forces a difference (`dialog`, `tab show`), the help says
+ * so.
  */
 import type {
   ActionOutcome,

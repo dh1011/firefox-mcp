@@ -5,8 +5,8 @@
  * `ws://127.0.0.1:<port>/extension` and sends `hello` with a random challenge. The daemon answers `welcome` with its
  * public key and a signature of the challenge. Frames are JSON objects.
  *
- * Pairing is a short authentication string built with a commitment, the design Browser MCP uses (Apache-2.0, see
- * NOTICE), because the threat is the same: a program that takes over the port must not get to drive the browser.
+ * Pairing is a short authentication string built with a commitment (see NOTICE), because a program that takes over
+ * the port must not get to drive the browser.
  *
  * 1. `hello` (extension → daemon) carries a random `challenge`.
  * 2. `welcome` (daemon → extension) carries `pairingCommitment`, the SHA-256 of a nonce the daemon made for this

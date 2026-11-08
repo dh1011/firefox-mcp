@@ -1,5 +1,5 @@
 /**
- * What Chrome's debugger tells Browser MCP, this learns by wrapping page functions: console messages, dialogs, and
+ * What a debugger would report, this learns by wrapping page functions: console messages, dialogs, and
  * `window.open`. `exportFunction` makes a function of this isolated world callable from the page, so nothing is
  * injected into the page's world, no page CSP applies, and the page can't forge what's reported. It runs only in tabs
  * an agent claimed.
