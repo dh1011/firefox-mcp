@@ -2,7 +2,7 @@
 
 # MCP for Firefox
 
-Lets AI apps (Claude Code, Cursor, VS Code, Claude Desktop…) use **your own Firefox**: your signed-in sites and your profile, in tabs of their own. Everything runs on your computer.
+Lets AI agents (in Claude Code, Cursor, VS Code, Claude Desktop…) use **your own Firefox**: your signed-in sites and your profile, in tabs of their own. Everything runs on your computer.
 
 It's [Browser MCP](https://github.com/browsermcp/mcp) for Firefox, with the same `browser` tool and command language, so prompts written for it carry over. The way it drives the browser had to be rebuilt, because Browser MCP relies on `chrome.debugger`, which Firefox doesn't have ([what that changes](#what-firefox-does-differently)).
 

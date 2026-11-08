@@ -3,7 +3,7 @@ import { isValidRelayPort } from "../protocol";
 import { runThin } from "./thin";
 import { VERSION } from "./version";
 
-const USAGE = `firefox-mcp: an MCP server that lets AI apps use your Firefox, through the MCP for Firefox extension.
+const USAGE = `firefox-mcp: an MCP server that lets AI agents use your Firefox, through the MCP for Firefox extension.
 
 Usage: firefox-mcp [--port <port>]
 
