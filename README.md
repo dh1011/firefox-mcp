@@ -1,3 +1,5 @@
+<img src="docs/logo.png" alt="" width="96">
+
 # MCP for Firefox
 
 Lets AI apps (Claude Code, Cursor, VS Code, Claude Desktop…) use **your own Firefox**: your signed-in sites and your profile, in tabs of their own. Everything runs on your computer.
@@ -19,13 +21,14 @@ npm install
 npm run build
 ```
 
-**2. Load the extension.** It isn't on addons.mozilla.org, so pick one:
+**2. Load the extension.** It isn't listed on addons.mozilla.org, so pick one:
 
 | | How | Lasts |
 | --- | --- | --- |
-| **Try it** | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → pick `dist/extension/manifest.json` | Until Firefox restarts |
-| **Nightly or Developer Edition** | Set `xpinstall.signatures.required` to `false` in `about:config`, run `npm run package:extension`, then open the `.xpi` from `dist/artifacts` in `about:addons` → gear → **Install Add-on From File…** | Permanently |
-| **Regular Firefox** | Get it signed by Mozilla as an unlisted add-on: `npx web-ext sign --channel unlisted --source-dir dist/extension --api-key … --api-secret …` ([API keys](https://addons.mozilla.org/developers/addon/api/key/)), then install the `.xpi` | Permanently |
+| **Any Firefox** | In Firefox, click the `.xpi` in the [latest release](https://github.com/dh1011/firefox-mcp/releases/latest), signed by Mozilla, and allow the install | Permanently |
+| **Try your own build** | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → pick `dist/extension/manifest.json` | Until Firefox restarts |
+| **Your own build, in Nightly or Developer Edition** | Set `xpinstall.signatures.required` to `false` in `about:config`, run `npm run package:extension`, then open the `.xpi` from `dist/artifacts` in `about:addons` → gear → **Install Add-on From File…** | Permanently |
+| **Your own build, in regular Firefox** | Change the add-on ID in `src/extension/static/manifest.json` to one of your own, then get it signed by Mozilla as an unlisted add-on: `npx web-ext sign --channel unlisted --source-dir dist/extension --api-key … --api-secret …` ([API keys](https://addons.mozilla.org/developers/addon/api/key/)), and install the `.xpi` | Permanently |
 
 **3. Add the server to your AI app's MCP config**
 
