@@ -21,7 +21,7 @@ npm run build
 
 **2. Add the extension to Firefox**
 
-Install [MCP for Firefox](https://addons.mozilla.org/firefox/addon/mcp-for-firefox/) from addons.mozilla.org. While Mozilla is still reviewing it, load the one you just built: open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…** and pick `dist/extension/manifest.json`. It stays until Firefox restarts.
+Install [MCP for Firefox](https://addons.mozilla.org/firefox/addon/mcp-for-firefox/) from addons.mozilla.org. To run your own build instead, see [other ways to load the extension](docs/how-it-works.md#other-ways-to-load-the-extension).
 
 **3. Add it to your AI app**
 

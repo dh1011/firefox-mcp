@@ -74,6 +74,7 @@ This gives AI apps the use of your signed-in browser, so it's worth knowing what
 
 | | How | Lasts |
 | --- | --- | --- |
+| **Your own build, to try it out** | Open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…** and pick `dist/extension/manifest.json` | Until Firefox restarts |
 | **Your own build, in Nightly or Developer Edition** | Set `xpinstall.signatures.required` to `false` in `about:config`, run `npm run package:extension`, then open the `.xpi` from `dist/artifacts` in `about:addons` → gear → **Install Add-on From File…** | Permanently |
 | **Your own build, in regular Firefox** | Change the add-on ID in `src/extension/static/manifest.json` to one of your own, then get it signed by Mozilla as an unlisted add-on: `npx web-ext sign --channel unlisted --source-dir dist/extension --api-key … --api-secret …` ([API keys](https://addons.mozilla.org/developers/addon/api/key/)), and install the `.xpi` | Permanently |
 
