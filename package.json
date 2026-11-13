@@ -1,6 +1,6 @@
 {
   "name": "firefox-mcp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "MCP server and Firefox extension that let AI agents use your own Firefox: your signed-in sites, in tabs of their own.",
   "license": "Apache-2.0",
   "private": true,
